@@ -1,6 +1,6 @@
 {
   "name": "@runtimestudio/tailwind-sort-php",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tailwind CSS class sorting for mixed PHP/HTML templates (WordPress-friendly)",
   "keywords": [
     "class-sorting",
@@ -15,27 +15,33 @@
   "license": "MIT",
   "author": "Greg Sevastos <greg@runtimestudio.com.au> (https://runtimestudio.com.au)",
   "files": [
+    "dist",
     "src"
   ],
-  "main": "src/index.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "module",
   "bin": {
-    "tailwind-sort-php": "src/cli.ts"
+    "tailwind-sort-php": "dist/cli.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/runtime-studio-au/tailwind-sort-php.git"
   },
   "scripts": {
+    "build": "tsc -p tsconfig.build.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "prepublishOnly": "npm run build",
     "sort": "bun run src/cli.ts",
     "sort:check": "bun run src/cli.ts --check",
     "test": "node --test \"test/*.test.ts\""
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "prettier": "^3.8"
+    "prettier": "^3.8",
+    "prettier-plugin-tailwindcss": "^0.8",
+    "typescript": ">=5.7"
   },
   "peerDependencies": {
     "prettier": ">=3",
