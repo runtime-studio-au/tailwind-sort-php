@@ -23,8 +23,14 @@ values, using a real PHP-aware lexer, and leaves everything else byte-identical.
 ## Install
 
 ```sh
+# Bun
 bun add -D @runtimestudio/tailwind-sort-php prettier prettier-plugin-tailwindcss
+
+# npm
+npm install -D @runtimestudio/tailwind-sort-php prettier prettier-plugin-tailwindcss
 ```
+
+pnpm and yarn work the same (`pnpm add -D …` / `yarn add -D …`).
 
 ## Setup
 
@@ -42,6 +48,8 @@ export default {
 this in place, the CLI needs no flags.
 
 ## Usage
+
+Run with `bunx` (Bun) or `npx` (Node ≥ 22.18):
 
 ```sh
 # sort every .php file under the cwd (stylesheet read from your Prettier config)
