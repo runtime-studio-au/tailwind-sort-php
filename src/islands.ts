@@ -1,5 +1,5 @@
 /**
- * PHP island detection.
+ * PHP island detection — the first pass of the two-pass lexer.
  *
  * Scans the raw template source and returns the byte ranges of all PHP "islands"
  * (`<?php ... ?>`, `<?= ... ?>`, and optionally short `<? ... ?>`).
@@ -7,7 +7,6 @@
  * The closing `?>` is found with a real PHP string/comment lexer, so a `?>` inside a string literal, heredoc/nowdoc,
  * or block comment does NOT close the island — whereas one inside a `//` or `#` line comment closes it (PHP quirk).
  *
- * @file First pass of the two-pass lexer.
  * @see html.ts - second pass; consumes islands via `maskIslands()`.
  */
 
