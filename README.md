@@ -68,7 +68,7 @@ bunx tailwind-sort-php --stylesheet ./resources/css/main.css
 ### Options
 
 | Flag                  | Description                                                                                       |
-| --------------------- | ------------------------------------------------------------------------------------------------- |
+|-----------------------|---------------------------------------------------------------------------------------------------|
 | `--stylesheet <path>` | Tailwind v4 CSS entry. Defaults to `tailwindStylesheet` from your Prettier config.                |
 | `--attr <name>`       | Extra attribute to sort (repeatable). Merged with `tailwindAttributes` from your Prettier config. |
 | `--check`             | Don't write; exit 1 if any file needs sorting.                                                    |
@@ -131,10 +131,12 @@ const out = transform(source, sortFn);
 
 ```sh
 bun test                       # or: node --test "test/*.test.ts"
+bun run build                  # compile src → dist (tsc); the published artifact
 ```
 
-41 tests, zero dependencies — the sorter is injected (`SortFn`), so tests run with a mock alphabetical sorter and the
-official sorter is only loaded by the CLI.
+46 tests: 41 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`), plus 5
+integration tests that exercise the real `prettier-plugin-tailwindcss` sorter and skip automatically when the Tailwind
+toolchain isn't installed.
 
 ## License
 
