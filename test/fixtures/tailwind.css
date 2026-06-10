@@ -1,0 +1,10 @@
+/* Minimal Tailwind v4 entry for the integration tests: core utilities, a custom @theme token, and a custom @utility. */
+@import 'tailwindcss';
+
+@theme {
+  --color-brand: #000000;
+}
+
+@utility section-py {
+  padding-block: 4rem;
+}
