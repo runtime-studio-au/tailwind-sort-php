@@ -12,7 +12,6 @@
  *     (removal would concatenate classes at render time) and never invented
  *     (insertion would split an intentional fragment).
  *
- * @file Core transform; orchestrates both lexer passes.
  * @see islands.ts - pass 1 (PHP island detection).
  * @see html.ts    - pass 2 (attribute location).
  * @see sorter.ts  - adapter producing the injected `SortFn`.
