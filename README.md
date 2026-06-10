@@ -76,6 +76,40 @@ bunx tailwind-sort-php --stylesheet ./resources/css/main.css
 
 Default globs are all `.php` files under the cwd; `node_modules`, `vendor`, `dist`, and `.git` are always skipped.
 
+## Editor integration
+
+No IDE plugin needed — two small setups cover the common workflows.
+
+### Sort on save (PhpStorm / IntelliJ)
+
+Add a File Watcher (Settings → Tools → File Watchers → `+` → Custom):
+
+- **File type:** PHP
+- **Program:** `$ProjectFileDir$/node_modules/.bin/tailwind-sort-php`
+- **Arguments:** `$FilePathRelativeToProjectRoot$`
+- **Working directory:** `$ProjectFileDir$`
+
+Untick "Auto-save edited files to trigger the watcher" so it runs on explicit save (~130 ms per file). The definition
+lives in `.idea/watcherTasks.xml`, which you can commit to share it with your team. (VS Code: trigger it on save with a
+run-on-save extension calling `tailwind-sort-php ${file}`.)
+
+### Pre-commit gate
+
+Keep unsorted classes from landing regardless of editor — a dependency-free Git hook at `.githooks/pre-commit`, enabled
+once via `git config core.hooksPath .githooks`:
+
+```sh
+#!/bin/sh
+files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php')
+[ -z "$files" ] && exit 0
+echo "$files" | xargs ./node_modules/.bin/tailwind-sort-php --check || {
+  echo "Unsorted Tailwind classes in staged PHP — run: npx tailwind-sort-php" >&2
+  exit 1
+}
+```
+
+The same `--check` works in CI.
+
 ## How it handles mixed templates
 
 PHP islands inside a class attribute are treated as opaque atoms that never move. Static text between islands is sorted
