@@ -32,7 +32,7 @@
     "build": "tsc -p tsconfig.build.json",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "npm test && npm run build",
     "sort": "bun run src/cli.ts",
     "sort:check": "bun run src/cli.ts --check",
     "test": "node --test \"test/*.test.ts\""
