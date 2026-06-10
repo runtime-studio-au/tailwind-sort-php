@@ -4,7 +4,7 @@
  * Tailwind CSS class sorting for mixed PHP/HTML templates. The core is dependency-free;
  * the official sorting engine is wired in via `createTailwindSortFn()` or any custom `SortFn`.
  *
- * @file Package entry point.
+ * @packageDocumentation
  * @see cli.ts - command-line interface built on this API.
  */
 
