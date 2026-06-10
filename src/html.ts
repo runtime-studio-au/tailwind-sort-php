@@ -1,5 +1,5 @@
 /**
- * HTML attribute scanner.
+ * HTML attribute scanner — the second pass of the two-pass lexer.
  *
  * Operates on a "masked" copy of the source in which every PHP island byte has been replaced with `\x00`
  * (offsets preserved). This means:
@@ -10,7 +10,6 @@
  * Skips HTML comments, doctype/CDATA, and the raw-text content of `script`/`style`/`textarea`/`title` elements —
  * their `script`/`style` content may contain strings like `class="..."` that must not be touched.
  *
- * @file Second pass of the two-pass lexer.
  * @see islands.ts - first pass; produces the islands consumed here.
  */
 
