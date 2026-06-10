@@ -3,7 +3,6 @@
  *
  * Kept separate from the core so the lexer/transformer stay dependency-free and testable with any injected sorter.
  *
- * @file Sorter adapter (the only module that touches the real dependency).
  * @see transform.ts - consumes the `SortFn` produced here.
  */
 
