@@ -4,6 +4,7 @@
  *
  * Usage:
  *   tailwind-sort-php [options] [glob ...]
+ *   tailwind-sort-php init [--fix] [--force] [--dry-run]
  *
  * Options:
  *   --stylesheet <path> Tailwind v4 CSS entry
@@ -12,12 +13,13 @@
  *   --no-short-tags Don't treat bare `<?` as a PHP open tag
  *
  * Defaults to all `.php` files under `cwd` (`"**" + "/*.php"`) when no globs are given.
- * Skips `node_modules`, `vendor`, `dist` and `.git`.
+ * Skips `node_modules`, `vendor`, `dist` and `.git`. The `init` subcommand installs the pre-commit hook; see `init.ts`.
  */
 
 import { readFile, writeFile } from 'node:fs/promises';
 import { transform, type TransformOptions } from './transform.ts';
 import { createTailwindSortFn } from './sorter.ts';
+import { runInit } from './init.ts';
 
 const IGNORE = ['node_modules', 'vendor', 'dist', '.git'];
 
@@ -117,7 +119,10 @@ async function fromPrettierConfig(): Promise<{
 }
 
 async function main() {
-  const cli = parseArgs(process.argv.slice(2));
+  const argv = process.argv.slice(2);
+  if (argv[0] === 'init') return runInit(argv.slice(1));
+
+  const cli = parseArgs(argv);
 
   const pc = await fromPrettierConfig();
   const stylesheet = cli.stylesheet ?? pc.stylesheet;
