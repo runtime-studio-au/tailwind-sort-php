@@ -1,10 +1,10 @@
-# Tailwind CSS class sorter for PHP & WordPress templates
+# Tailwind CSS Class Sorter for PHP
 
 [![npm version](https://img.shields.io/npm/v/@runtimestudio/tailwind-sort-php)](https://www.npmjs.com/package/@runtimestudio/tailwind-sort-php)
 [![License: MIT](https://img.shields.io/npm/l/@runtimestudio/tailwind-sort-php)](LICENSE)
 
-`@runtimestudio/tailwind-sort-php` sorts Tailwind CSS classes in **plain PHP files, WordPress themes, and mixed
-PHP/HTML templates** — the case `prettier-plugin-tailwindcss` can't parse and `@prettier/plugin-php` mangles.
+`@runtimestudio/tailwind-sort-php` sorts Tailwind CSS classes in **plain PHP files, WordPress themes and plugins, and
+mixed PHP/HTML templates** — the case `prettier-plugin-tailwindcss` can't parse and `@prettier/plugin-php` mangles.
 
 `prettier-plugin-tailwindcss` sorts classes beautifully, but it can't parse files that interleave PHP with HTML, and
 `@prettier/plugin-php` reformats the entire PHP file as a side effect. This tool sorts **only** the class attribute
@@ -66,6 +66,9 @@ bunx tailwind-sort-php --check
 
 # explicit stylesheet (overrides the Prettier config)
 bunx tailwind-sort-php --stylesheet ./resources/css/main.css
+
+# one-time: install the pre-commit hook (see "Pre-commit gate" below)
+bunx tailwind-sort-php init
 ```
 
 ### Options
@@ -115,20 +118,31 @@ to `.vscode/settings.json`:
 
 ### Pre-commit gate
 
-Keep unsorted classes from landing regardless of editor — a dependency-free Git hook at `.githooks/pre-commit`, enabled
-once via `git config core.hooksPath .githooks`:
+Keep unsorted classes from landing regardless of the editor. One command installs a dependency-free Git hook at
+`.githooks/pre-commit` and points `core.hooksPath` at it:
 
 ```sh
-#!/bin/sh
-files=$(git diff --cached --name-only --diff-filter=ACM -- '*.php')
-[ -z "$files" ] && exit 0
-echo "$files" | xargs ./node_modules/.bin/tailwind-sort-php --check || {
-  echo "Unsorted Tailwind classes in staged PHP — run: npx tailwind-sort-php" >&2
-  exit 1
-}
+# check-and-fail (default): names the unsorted files and blocks the commit
+npx tailwind-sort-php init
+
+# auto-fix: sorts the staged files in place, then blocks the commit for review and re-staging
+npx tailwind-sort-php init --fix
 ```
 
-The same `--check` works in CI.
+`init` is no-clobber by default: it refuses to overwrite a differing hook, repoint a `core.hooksPath` that's set
+elsewhere (husky etc.), or disable hooks already living in `.git/hooks` — pass `--force` to override, `--dry-run` to
+preview. Run it once per clone; commit the `.githooks/` directory to share the hook with your team.
+
+Both variants check working-tree file contents, so with partial staging (`git add -p`) the hook can mis-report — and
+under `--fix`, re-staging a fixed file can pull in unrelated unstaged hunks.
+
+Wiring the gate into your own hook manager (husky, lefthook) instead? The staged-PHP check is this one-liner:
+
+```sh
+git diff --cached --name-only -z --diff-filter=ACMR -- '*.php' | xargs -0 ./node_modules/.bin/tailwind-sort-php --check
+```
+
+In CI there's no staged diff — just sweep the whole project with `npx tailwind-sort-php --check`.
 
 ## How it handles mixed templates
 
@@ -188,10 +202,11 @@ bun test                       # or: node --test "test/*.test.ts"
 bun run build                  # compile src → dist (tsc); the published artifact
 ```
 
-46 tests: 41 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`), plus 5
+54 tests: 41 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`), 5
 integration tests that exercise the real `prettier-plugin-tailwindcss` sorter and skip automatically when the Tailwind
-toolchain isn't installed.
+toolchain isn't installed, and 8 `init` tests that run against throwaway git repositories and skip when `git` is
+unavailable.
 
 ## License
 
-MIT © Runtime Studio
+[MIT](LICENSE) © Runtime Studio
