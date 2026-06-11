@@ -1,7 +1,7 @@
 {
   "name": "@runtimestudio/tailwind-sort-php",
   "version": "0.2.0",
-  "description": "Tailwind CSS class sorting for mixed PHP/HTML templates (WordPress-friendly)",
+  "description": "Tailwind CSS Class Sorter for PHP",
   "keywords": [
     "class-sorting",
     "formatter",
