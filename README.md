@@ -1,7 +1,10 @@
-# @runtimestudio/tailwind-sort-php
+# Tailwind CSS class sorter for PHP & WordPress templates
 
-Tailwind CSS class sorting for **mixed PHP/HTML templates** — the WordPress template-partial case that
-`@prettier/plugin-php` + `prettier-plugin-tailwindcss` can't handle.
+[![npm version](https://img.shields.io/npm/v/@runtimestudio/tailwind-sort-php)](https://www.npmjs.com/package/@runtimestudio/tailwind-sort-php)
+[![License: MIT](https://img.shields.io/npm/l/@runtimestudio/tailwind-sort-php)](LICENSE)
+
+`@runtimestudio/tailwind-sort-php` sorts Tailwind CSS classes in **plain PHP files, WordPress themes, and mixed
+PHP/HTML templates** — the case `prettier-plugin-tailwindcss` can't parse and `@prettier/plugin-php` mangles.
 
 `prettier-plugin-tailwindcss` sorts classes beautifully, but it can't parse files that interleave PHP with HTML, and
 `@prettier/plugin-php` reformats the entire PHP file as a side effect. This tool sorts **only** the class attribute
@@ -78,7 +81,7 @@ Default globs are all `.php` files under the cwd; `node_modules`, `vendor`, `dis
 
 ## Editor integration
 
-No IDE plugin needed — two small setups cover the common workflows.
+No IDE plugin is needed — two small setups cover the common workflows.
 
 ### Sort on save (PhpStorm / IntelliJ)
 
@@ -90,8 +93,25 @@ Add a File Watcher (Settings → Tools → File Watchers → `+` → Custom):
 - **Working directory:** `$ProjectFileDir$`
 
 Untick "Auto-save edited files to trigger the watcher" so it runs on explicit save (~130 ms per file). The definition
-lives in `.idea/watcherTasks.xml`, which you can commit to share it with your team. (VS Code: trigger it on save with a
-run-on-save extension calling `tailwind-sort-php ${file}`.)
+lives in `.idea/watcherTasks.xml`, which you can commit to share it with your team.
+
+### Sort on save (VS Code)
+
+Install the [Run on Save](https://marketplace.visualstudio.com/items?itemName=emeraldwalk.RunOnSave) extension, then add
+to `.vscode/settings.json`:
+
+```json
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "\\.php$",
+        "cmd": "${workspaceFolder}/node_modules/.bin/tailwind-sort-php ${relativeFile}"
+      }
+    ]
+  }
+}
+```
 
 ### Pre-commit gate
 
