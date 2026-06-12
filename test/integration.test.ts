@@ -1,9 +1,9 @@
 /**
  * Integration tests for the real sorter adapter (src/sorter.ts).
  *
- * Builds `createTailwindSortFn` against a fixture Tailwind v4 stylesheet and runs the island-aware
- * `transform` with the real engine — proving the official sort order and that custom `@theme`/`@utility`
- * vocabulary is recognized, which the mock-sorter suite cannot.
+ * Builds `createTailwindSortFn` against a fixture Tailwind v4 stylesheet and runs the island-aware `transform` with
+ * the real engine — proving the official sort order and that custom `@theme`/`@utility` vocabulary is recognized,
+ * which the mock-sorter suite cannot.
  *
  * The whole suite skips when the optional Tailwind toolchain (`tailwindcss` / `prettier-plugin-tailwindcss`)
  * isn't installed, so the core tests stay dependency-free.
