@@ -17,7 +17,7 @@ const HOOK_PATH = `${HOOKS_DIR}/pre-commit`;
  */
 const HOOK_CHECK = `#!/bin/sh
 # Block commits with unsorted Tailwind classes in staged PHP files. Installed by \`tailwind-sort-php init\`.
-# Note: checks working-tree file contents, so partial staging (git add -p) can mis-report; see README.
+# Note: checks working-tree file contents, so partial staging (\`git add -p\`) can mis-report; see README.
 sorter=./node_modules/.bin/tailwind-sort-php
 [ -x "$sorter" ] || exit 0
 git diff --cached --name-only --diff-filter=ACMR -- '*.php' | grep -q . || exit 0
@@ -36,7 +36,7 @@ exit 1
 const HOOK_FIX = `#!/bin/sh
 # Sort Tailwind classes in staged PHP files, then abort the commit so the changes can be reviewed and re-staged.
 # Rewrites working-tree files. Installed by \`tailwind-sort-php init --fix\`.
-# Note: with partial staging (git add -p), re-staging can pull in unrelated unstaged hunks; see README.
+# Note: with partial staging (\`git add -p\`), re-staging can pull in unrelated unstaged hunks; see README.
 sorter=./node_modules/.bin/tailwind-sort-php
 [ -x "$sorter" ] || exit 0
 git diff --cached --name-only --diff-filter=ACMR -- '*.php' | grep -q . || exit 0
