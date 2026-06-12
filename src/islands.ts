@@ -104,7 +104,7 @@ function scanPhpBody(src: string, i: number): number {
     }
 
     // Double-quoted string.
-    // Limitation: nested double quotes in complex `{$a["k"]}` interpolation can desync the lexer (documented).
+    // Limitation: nested double quotes in complex `{$a["k"]}` interpolation can desync the lexer; see README.
     if (c === '"') {
       i = scanQuoted(src, i + 1, '"');
       continue;
