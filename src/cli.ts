@@ -12,7 +12,7 @@
  *   --check Don't write; exit 1 if any file needs sorting
  *   --no-short-tags Don't treat bare `<?` as a PHP open tag
  *
- * Defaults to all `.php` files under `cwd` (`"**" + "/*.php"`) when no globs are given.
+ * Defaults to all `.php` files under `cwd` when no globs are given.
  * Skips `node_modules`, `vendor`, `dist` and `.git`. The `init` subcommand installs the pre-commit hook; see `init.ts`.
  */
 
@@ -65,7 +65,6 @@ function parseArgs(argv: string[]): Cli {
  * @param globs Glob patterns relative to `cwd`.
  */
 async function* scanFiles(globs: string[]): AsyncGenerator<string> {
-  // Use `Bun.Glob` when available, fall back to `node:fs` glob (Node 22+).
   if (typeof (globalThis as any).Bun !== 'undefined') {
     const { Glob } = await import('bun');
     for (const pattern of globs) {
