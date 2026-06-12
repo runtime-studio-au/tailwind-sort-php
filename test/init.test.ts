@@ -1,5 +1,5 @@
 /**
- * Tests for the `init` subcommand (src/init.ts).
+ * Tests for the `init` subcommand (`src/init.ts`).
  *
  * Each test creates a throwaway git repository and runs the CLI as a subprocess, asserting on the files, config,
  * exit codes, and refusal messages it produces. Global/system git config is masked so a user-level `core.hooksPath`
