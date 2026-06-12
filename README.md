@@ -20,17 +20,17 @@ values, using a real PHP-aware lexer, and leaves everything else byte-identical.
 
 ## Requirements
 
-- **Bun**, or **Node ≥ 22.18** (native TypeScript type-stripping) — both run the CLI and the programmatic API.
+- **Node ≥ 22.18**, or **Bun** — both run the CLI and the programmatic API.
 - `prettier` ≥ 3 and `prettier-plugin-tailwindcss` ≥ 0.8 (peer dependencies).
 
 ## Install
 
 ```sh
-# Bun
-bun add -D @runtimestudio/tailwind-sort-php prettier prettier-plugin-tailwindcss
-
 # npm
 npm install -D @runtimestudio/tailwind-sort-php prettier prettier-plugin-tailwindcss
+
+# Bun
+bun add -D @runtimestudio/tailwind-sort-php prettier prettier-plugin-tailwindcss
 ```
 
 pnpm and yarn work the same (`pnpm add -D …` / `yarn add -D …`).
@@ -52,23 +52,23 @@ this in place, the CLI needs no flags.
 
 ## Usage
 
-Run with `bunx` (Bun) or `npx` (Node ≥ 22.18):
+Run with `npx` (Node ≥ 22.18) or `bunx` (Bun):
 
 ```sh
 # sort every .php file under the cwd (stylesheet read from your Prettier config)
-bunx tailwind-sort-php
+npx tailwind-sort-php
 
 # specific globs
-bunx tailwind-sort-php "template-parts/**/*.php" "*.php"
+npx tailwind-sort-php "template-parts/**/*.php" "*.php"
 
 # CI / pre-commit — write nothing, exit 1 if anything is unsorted
-bunx tailwind-sort-php --check
+npx tailwind-sort-php --check
 
 # explicit stylesheet (overrides the Prettier config)
-bunx tailwind-sort-php --stylesheet ./resources/css/main.css
+npx tailwind-sort-php --stylesheet ./resources/css/main.css
 
 # one-time: install the pre-commit hook (see "Pre-commit gate" below)
-bunx tailwind-sort-php init
+npx tailwind-sort-php init
 ```
 
 ### Options
