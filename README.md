@@ -38,7 +38,9 @@ pnpm and yarn work the same (`pnpm add -D …` / `yarn add -D …`).
 ## Setup
 
 Point Prettier at your Tailwind v4 entry stylesheet so both `prettier-plugin-tailwindcss` and this tool share one
-vocabulary. In `prettier.config.mjs`:
+vocabulary. Any config format Prettier supports works (`.prettierrc`, `prettier.config.js`, a `package.json`
+`"prettier"` key, …) — the tool reads the resolved config, exactly like the plugin does. For example, in
+`prettier.config.mjs`:
 
 ```js
 export default {
@@ -198,8 +200,8 @@ const out = transform(source, sortFn);
 ## Development
 
 ```sh
-bun test                       # or: node --test "test/*.test.ts"
-bun run build                  # compile src → dist (tsc); the published artifact
+bun test      # or: node --test "test/*.test.ts"
+bun run build # compile src → dist (tsc); the published artifact
 ```
 
 54 tests: 41 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`), 5
