@@ -8,7 +8,7 @@
  *   - islands inside a quoted attribute value read as opaque atoms
  *
  * Skips HTML comments, doctype/CDATA, and the raw-text content of `script`/`style`/`textarea`/`title` elements —
- * their `script`/`style` content may contain strings like `class="..."` that must not be touched.
+ * their content may contain strings like `class="..."` that must not be touched.
  *
  * @see islands.ts - first pass; produces the islands consumed here.
  */
