@@ -75,12 +75,13 @@ npx tailwind-sort-php init
 
 ### Options
 
-| Flag                  | Description                                                                                       |
-|-----------------------|---------------------------------------------------------------------------------------------------|
-| `--stylesheet <path>` | Tailwind v4 CSS entry. Defaults to `tailwindStylesheet` from your Prettier config.                |
-| `--attr <name>`       | Extra attribute to sort (repeatable). Merged with `tailwindAttributes` from your Prettier config. |
-| `--check`             | Don't write; exit 1 if any file needs sorting.                                                    |
-| `--no-short-tags`     | Don't treat bare `<?` as a PHP open tag.                                                          |
+| Flag                  | Description                                                                                                                                                                                    |
+|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--stylesheet <path>` | Tailwind v4 CSS entry. Defaults to `tailwindStylesheet` from your Prettier config.                                                                                                             |
+| `--attr <name>`       | Extra attribute to sort (repeatable). Merged with `tailwindAttributes` from your Prettier config.                                                                                              |
+| `--php-source <glob>` | Also sort class strings in PHP declarations in matching files (repeatable). Merged with `tailwindPhpSources`. See [Sorting classes in PHP declarations](#sorting-classes-in-php-declarations). |
+| `--check`             | Don't write; exit 1 if any file needs sorting.                                                                                                                                                 |
+| `--no-short-tags`     | Don't treat bare `<?` as a PHP open tag.                                                                                                                                                       |
 
 Default globs are all `.php` files under the cwd; `node_modules`, `vendor`, `dist`, and `.git` are always skipped.
 
@@ -146,6 +147,93 @@ git diff --cached --name-only -z --diff-filter=ACMR -- '*.php' | xargs -0 ./node
 
 In CI there's no staged diff — just sweep the whole project with `npx tailwind-sort-php --check`.
 
+## Sorting classes in PHP declarations
+
+By default, the tool only sorts classes inside HTML `class="..."` attributes. Class strings declared in **PHP itself** —
+constants, static properties, config arrays — sit inside PHP code the tool treats as opaque, so they're left alone.
+
+Opt in **per file** by listing the files whose PHP string values are Tailwind class lists, via `tailwindPhpSources` in
+your Prettier config (or the repeatable `--php-source <glob>` flag):
+
+```js
+export default {
+  plugins: ['prettier-plugin-tailwindcss'],
+  tailwindStylesheet: './resources/css/main.css',
+  tailwindPhpSources: ['src/classes/*.php'],
+};
+```
+
+With this set, every **string value** in a matched file is sorted with the exact same engine and order as the HTML
+side. In `key => value` arrays only the **value** is sorted — keys are never touched:
+
+```php
+// before
+public const array VARIANTS = array(
+    'primary'   => 'text-white px-4 bg-blue-600 rounded py-2',
+    'secondary' => 'text-gray-900 px-4 bg-gray-100 rounded py-2',
+);
+
+// after
+public const array VARIANTS = array(
+    'primary'   => 'rounded bg-blue-600 px-4 py-2 text-white',
+    'secondary' => 'rounded bg-gray-100 px-4 py-2 text-gray-900',
+);
+```
+
+Scalar declarations work the same way (`const string CARD = '...'`, `static $x = '...'`, `$x = '...'`), as do nested
+and list-style arrays.
+
+> **⚠️ Point `tailwindPhpSources` only at files whose string values are all Tailwind class lists.** The tool does
+> **not** guess whether a string "looks like" classes — within a matched file it sorts **every** eligible string value.
+> Aimed at a general file, it **will** reorder the words inside non-class strings (labels, URLs, SQL). This is a
+> deliberate design contract, not a bug: safety comes from your file-level opt-in, which is why a dedicated
+> directory of class-holder files (e.g. `src/classes/`) is the intended target.
+
+The opt-in is **inert at runtime** — it lives in formatter config only, never in your source. Your PHP stays vanilla,
+with zero coupling to this tool (no marker comments, no helper functions, no attributes).
+
+**Skipped automatically** (left byte-identical, even in a matched file):
+
+- Concatenated literals (`'btn-' . $variant`) — a fragment joined to dynamic code, unsafe to reorder.
+- Interpolated double-quoted strings (`"p-4 {$dynamic} flex"`).
+- Heredoc/nowdoc and backtick (shell-exec) strings, and strings containing escape sequences.
+
+**Off by default:** without `tailwindPhpSources` (and `--php-source`), behavior is identical to 0.2.x — no PHP
+declaration is ever touched.
+
+## WordPress themes & plugins
+
+Most WordPress sorting needs **no opt-in at all**. Template files and partials output markup, and the `class="..."`
+in that markup is sorted by the default HTML pass — even when the value is interrupted by PHP:
+
+```php
+<article <?php post_class( 'z-10 flex' ); ?>>
+  <h2 class="text-2xl font-bold <?= $featured ? 'text-amber-600' : '' ?> tracking-tight">
+```
+
+`tailwindPhpSources` is only for classes you store in **PHP values** — a variant map, a config array, theme defaults.
+For that, **don't opt in a general partial.** Partials are full of non-class strings — `__()` translations,
+`get_template_part()` names, query args, URLs — and an opted-in file sorts _every_ multi-word string value. The Tailwind
+sorter leaves most prose alone (unknown words keep their order), but it **will** reorder any string containing words
+that are also utilities (`grid`, `block`, `flex`, `hidden`, `container`, `table`, …), so `'Switch to grid view'`
+becomes `'Switch to view grid'`.
+
+Instead, keep class maps in a **dedicated file** whose every value is a class list, and opt in only that file:
+
+```php
+// inc/ui-classes.php   →   tailwindPhpSources: ['inc/ui-classes.php']
+return array(
+    'button' => array(
+        'primary'   => 'rounded bg-blue-600 px-4 py-2 text-white',
+        'secondary' => 'rounded bg-gray-100 px-4 py-2 text-gray-900',
+    ),
+    'card'   => 'rounded-lg border bg-white p-6 shadow-sm',
+);
+```
+
+`require` that map from your partials. The map file is 100% class strings (safe to sort); the partials stay out of
+`tailwindPhpSources` and get their markup sorted by the HTML pass as usual.
+
 ## How it handles mixed templates
 
 PHP islands inside a class attribute are treated as opaque atoms that never move. Static text between islands is sorted
@@ -173,8 +261,8 @@ Also handled correctly:
 - `?>` inside `//` and `#` line comments (island ends — genuine PHP behavior)
 - `#[Attributes]`, `<?PHP` case-insensitivity, `<?xml` exclusion, files ending in PHP mode
 - PHP islands as standalone attributes: `<div <?php post_class(); ?> class="...">`
-- `<script>`/`<style>` content, HTML comments, and `echo '<div class="...">'` strings are left alone (sorting
-  `class="..."` inside PHP string literals could be added later as an opt-in)
+- `<script>`/`<style>` content, HTML comments, and `echo '<div class="...">'` strings are left alone (to sort class
+  strings declared in PHP, see [Sorting classes in PHP declarations](#sorting-classes-in-php-declarations))
 
 ## Programmatic API
 
