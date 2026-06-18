@@ -19,6 +19,7 @@
 
 import { findIslands, type Island, type IslandOptions } from './islands.ts';
 import { maskIslands, findClassAttributes, type HtmlScanOptions } from './html.ts';
+import { findSortablePhpStrings } from './php-strings.ts';
 
 /**
  * Sorting strategy injected by the caller. Receives the class tokens of a single static run;
@@ -27,9 +28,14 @@ import { maskIslands, findClassAttributes, type HtmlScanOptions } from './html.t
 export type SortFn = (classes: string[]) => string[];
 
 /**
- * Combined options for both lexer passes.
+ * Combined options for all lexer passes.
  */
-export interface TransformOptions extends IslandOptions, HtmlScanOptions {}
+export interface TransformOptions extends IslandOptions, HtmlScanOptions {
+  /**
+   * Sort classes in PHP string-literal values too. Off by default; see `php-strings.ts` for eligibility.
+   */
+  sortPhpStrings?: boolean;
+}
 
 /**
  * Rewrite all class attribute values in the template source with sorted classes.
@@ -49,17 +55,31 @@ export function transform(src: string, sortFn: SortFn, opts: TransformOptions = 
   const masked = maskIslands(src, islands);
   const attrs = findClassAttributes(masked, opts);
 
-  // Apply replacements back-to-front so offsets stay valid.
-  let out = src;
-  for (let a = attrs.length - 1; a >= 0; a--) {
-    const { valueStart, valueEnd } = attrs[a];
+  // Collect every edit as a {start, end, text} range, then apply them back-to-front so offsets stay valid.
+  // HTML class-attribute values live outside islands; PHP string values live inside them, so the two sets of
+  // ranges never overlap.
+  const edits: { start: number; end: number; text: string }[] = [];
+
+  for (const { valueStart, valueEnd } of attrs) {
     const original = src.slice(valueStart, valueEnd);
     const inner = islands.filter((isl) => isl.start >= valueStart && isl.end <= valueEnd);
     const rewritten = rewriteValue(original, valueStart, inner, sortFn);
-    if (rewritten !== original) {
-      out = out.slice(0, valueStart) + rewritten + out.slice(valueEnd);
+    if (rewritten !== original) edits.push({ start: valueStart, end: valueEnd, text: rewritten });
+  }
+
+  if (opts.sortPhpStrings) {
+    for (const { start, end } of findSortablePhpStrings(src, islands)) {
+      const original = src.slice(start, end);
+      const tokens = original.split(/\s+/).filter(Boolean);
+      if (tokens.length < 2) continue; // nothing to reorder; leave byte-identical
+      const rewritten = sortFn(tokens).join(' ');
+      if (rewritten !== original) edits.push({ start, end, text: rewritten });
     }
   }
+
+  edits.sort((a, b) => b.start - a.start);
+  let out = src;
+  for (const e of edits) out = out.slice(0, e.start) + e.text + out.slice(e.end);
   return out;
 }
 
