@@ -91,11 +91,10 @@ async function* scanFiles(globs: string[]): AsyncGenerator<string> {
 const ignored = (file: string) => IGNORE.some((d) => file.includes(`${d}/`) || file.startsWith(d));
 
 /**
- * Best-effort read of the project's resolved Prettier config, so this tool shares one source of truth with
- * `prettier-plugin-tailwindcss`. Picks up `tailwindStylesheet` (resolved relative to the config file) and
- * `tailwindAttributes` (merged into the attribute list).
+ * Best-effort read of the resolved Prettier config — the shared source of truth with `prettier-plugin-tailwindcss`.
+ * Picks up `tailwindStylesheet`, `tailwindAttributes`, and `tailwindPhpSources`.
  *
- * @returns The resolved stylesheet path and attributes, or an empty object if none are available.
+ * @returns The found settings, or an empty object if none are available.
  */
 async function fromPrettierConfig(): Promise<{
   stylesheet?: string;
