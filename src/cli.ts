@@ -9,6 +9,7 @@
  * Options:
  *   --stylesheet <path> Tailwind v4 CSS entry
  *   --attr <name> Extra attribute to sort (repeatable)
+ *   --php-source <glob> Also sort class strings in PHP declarations in matching files (repeatable)
  *   --check Don't write; exit 1 if any file needs sorting
  *   --no-short-tags Don't treat bare `<?` as a PHP open tag
  *
@@ -27,6 +28,7 @@ interface Cli {
   globs: string[];
   stylesheet?: string;
   attrs: string[];
+  phpSources: string[];
   check: boolean;
   shortTags: boolean;
 }
@@ -41,6 +43,7 @@ function parseArgs(argv: string[]): Cli {
   const cli: Cli = {
     globs: [],
     attrs: ['class', 'className'],
+    phpSources: [],
     check: false,
     shortTags: true,
   };
@@ -50,6 +53,7 @@ function parseArgs(argv: string[]): Cli {
     else if (a === '--no-short-tags') cli.shortTags = false;
     else if (a === '--stylesheet') cli.stylesheet = argv[++i];
     else if (a === '--attr') cli.attrs.push(argv[++i]);
+    else if (a === '--php-source') cli.phpSources.push(argv[++i]);
     else if (a.startsWith('--')) {
       console.error(`Unknown option: ${a}`);
       process.exit(2);
@@ -96,6 +100,7 @@ const ignored = (file: string) => IGNORE.some((d) => file.includes(`${d}/`) || f
 async function fromPrettierConfig(): Promise<{
   stylesheet?: string;
   attributes?: string[];
+  phpSources?: string[];
 }> {
   try {
     const prettier = await import('prettier');
@@ -104,12 +109,15 @@ async function fromPrettierConfig(): Promise<{
     if (!configFile) return {};
     const cfg = (await prettier.resolveConfig(configFile)) as Record<string, unknown> | null;
     if (!cfg) return {};
-    const out: { stylesheet?: string; attributes?: string[] } = {};
+    const out: { stylesheet?: string; attributes?: string[]; phpSources?: string[] } = {};
     if (typeof cfg.tailwindStylesheet === 'string') {
       out.stylesheet = resolve(dirname(configFile), cfg.tailwindStylesheet);
     }
     if (Array.isArray(cfg.tailwindAttributes)) {
       out.attributes = cfg.tailwindAttributes.filter((a): a is string => typeof a === 'string' && !a.startsWith('/'));
+    }
+    if (Array.isArray(cfg.tailwindPhpSources)) {
+      out.phpSources = cfg.tailwindPhpSources.filter((p): p is string => typeof p === 'string');
     }
     return out;
   } catch {
@@ -144,23 +152,31 @@ async function main() {
     shortOpenTags: cli.shortTags,
   };
 
+  // Pre-scan the opt-in `tailwindPhpSources` globs; a file gets `sortPhpStrings` only if it matches one.
+  const phpSources = [...cli.phpSources, ...(pc.phpSources ?? [])];
+  const phpSourceFiles = new Set<string>();
+  for await (const file of scanFiles(phpSources)) {
+    if (!ignored(file)) phpSourceFiles.add(file);
+  }
+
   let scanned = 0;
   let changed = 0;
+  const seen = new Set<string>();
 
-  for (const pattern of cli.globs) {
-    for await (const file of scanFiles([pattern])) {
-      if (ignored(file)) continue;
-      scanned++;
-      const src = await readFile(file, 'utf8');
-      const out = transform(src, sortFn, opts);
-      if (out !== src) {
-        changed++;
-        if (cli.check) {
-          console.log(`needs sorting: ${file}`);
-        } else {
-          await writeFile(file, out);
-          console.log(`sorted: ${file}`);
-        }
+  // Include php-source files so a designated holder is sorted even outside the main globs; `seen` dedupes.
+  for await (const file of scanFiles([...cli.globs, ...phpSources])) {
+    if (ignored(file) || seen.has(file)) continue;
+    seen.add(file);
+    scanned++;
+    const src = await readFile(file, 'utf8');
+    const out = transform(src, sortFn, { ...opts, sortPhpStrings: phpSourceFiles.has(file) });
+    if (out !== src) {
+      changed++;
+      if (cli.check) {
+        console.log(`needs sorting: ${file}`);
+      } else {
+        await writeFile(file, out);
+        console.log(`sorted: ${file}`);
       }
     }
   }
