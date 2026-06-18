@@ -65,4 +65,21 @@ describe('real Tailwind sorter integration', { skip }, () => {
     const src = `<article <?php post_class('z-10 flex p-4'); ?>>`;
     assert.equal(run(src), src);
   });
+
+  test('PHP declaration array: values sorted by the real order, keys untouched', () => {
+    const value = ['z-10', 'flex', 'p-4', 'm-2'];
+    const expected = sortFn!(value).join(' ');
+    const src = `<?php return array('left' => '${value.join(' ')}');`;
+    const out = transform(src, sortFn!, { sortPhpStrings: true });
+    assert.equal(out, `<?php return array('left' => '${expected}');`);
+  });
+
+  test('PHP-string order matches the HTML-side order for the same class set', () => {
+    const value = ['z-10', 'flex', 'p-4', 'm-2'];
+    const html = transform(`<div class="${value.join(' ')}">`, sortFn!, {});
+    const php = transform(`<?php $x = '${value.join(' ')}';`, sortFn!, { sortPhpStrings: true });
+    const fromHtml = html.match(/class="([^"]+)"/)![1];
+    const fromPhp = php.match(/'([^']+)'/)![1];
+    assert.equal(fromPhp, fromHtml);
+  });
 });
