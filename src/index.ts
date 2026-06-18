@@ -11,4 +11,5 @@
 export { transform, type SortFn, type TransformOptions } from './transform.ts';
 export { findIslands, type Island, type IslandOptions } from './islands.ts';
 export { maskIslands, findClassAttributes, type ClassAttr, type HtmlScanOptions } from './html.ts';
+export { findSortablePhpStrings, type PhpStringRange } from './php-strings.ts';
 export { createTailwindSortFn, type SorterOptions } from './sorter.ts';
