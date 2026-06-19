@@ -2,9 +2,9 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-brand: #000000;
+    --color-brand: #000000;
 }
 
 @utility section-py {
-  padding-block: 4rem;
+    padding-block: 4rem;
 }
