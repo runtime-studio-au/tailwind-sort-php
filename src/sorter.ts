@@ -13,7 +13,7 @@ import type { SortFn } from './transform.ts';
  */
 export interface SorterOptions {
   /**
-   * Tailwind v4 CSS entry point (`@import "tailwindcss"`, `@theme`, etc.).
+   * Tailwind v4 CSS entry point.
    */
   stylesheet: string;
   /**
@@ -23,8 +23,8 @@ export interface SorterOptions {
 }
 
 /**
- * Create a `SortFn` backed by the official `prettier-plugin-tailwindcss` sorting engine, configured with
- * the project's Tailwind v4 stylesheet so custom `@theme` tokens and `@utility` classes sort correctly.
+ * Create a `SortFn` backed by the official `prettier-plugin-tailwindcss` sorting engine,
+ * configured with the project's Tailwind v4 stylesheet so custom tokens and classes sort correctly.
  *
  * Requires `prettier-plugin-tailwindcss` >= 0.8 (the `/sorter` entrypoint).
  *
@@ -32,8 +32,7 @@ export interface SorterOptions {
  * @returns A synchronous `SortFn` for use with `transform()`.
  */
 export async function createTailwindSortFn(opts: SorterOptions): Promise<SortFn> {
-  // Dynamic import so the core package works without the dependency
-  // installed (e.g., when only running tests with a mock sorter).
+  // Dynamic import so the core package works without the dependency installed.
   const { createSorter } = await import('prettier-plugin-tailwindcss/sorter');
 
   const sorter = await createSorter({
