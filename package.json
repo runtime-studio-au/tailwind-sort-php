@@ -1,57 +1,57 @@
 {
-  "name": "@runtimestudio/tailwind-sort-php",
-  "version": "0.3.0",
-  "description": "Tailwind CSS Class Sorter for PHP",
-  "keywords": [
-    "class-sorting",
-    "formatter",
-    "php",
-    "prettier",
-    "tailwindcss",
-    "wordpress"
-  ],
-  "homepage": "https://github.com/runtime-studio-au/tailwind-sort-php#readme",
-  "bugs": "https://github.com/runtime-studio-au/tailwind-sort-php/issues",
-  "license": "MIT",
-  "author": "Greg Sevastos <greg@runtimestudio.com.au> (https://runtimestudio.com.au)",
-  "files": [
-    "dist",
-    "src"
-  ],
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "type": "module",
-  "bin": {
-    "tailwind-sort-php": "dist/cli.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/runtime-studio-au/tailwind-sort-php.git"
-  },
-  "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepublishOnly": "npm test && npm run build",
-    "sort": "bun run src/cli.ts",
-    "sort:check": "bun run src/cli.ts --check",
-    "test": "node --test \"test/*.test.ts\""
-  },
-  "devDependencies": {
-    "@types/bun": "latest",
-    "prettier": "^3.8",
-    "prettier-plugin-tailwindcss": "^0.8",
-    "tailwindcss": "^4",
-    "typescript": ">=5.7"
-  },
-  "peerDependencies": {
-    "prettier": ">=3",
-    "prettier-plugin-tailwindcss": ">=0.8"
-  },
-  "engines": {
-    "node": ">=22.18"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+    "name": "@runtimestudio/tailwind-sort-php",
+    "version": "0.3.0",
+    "description": "Tailwind CSS Class Sorter for PHP",
+    "keywords": [
+        "class-sorting",
+        "formatter",
+        "php",
+        "prettier",
+        "tailwindcss",
+        "wordpress"
+    ],
+    "homepage": "https://github.com/runtime-studio-au/tailwind-sort-php#readme",
+    "bugs": "https://github.com/runtime-studio-au/tailwind-sort-php/issues",
+    "license": "MIT",
+    "author": "Greg Sevastos <greg@runtimestudio.com.au> (https://runtimestudio.com.au)",
+    "files": [
+        "dist",
+        "src"
+    ],
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "type": "module",
+    "bin": {
+        "tailwind-sort-php": "dist/cli.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/runtime-studio-au/tailwind-sort-php.git"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "format": "prettier --write .",
+        "format:check": "prettier --check .",
+        "prepublishOnly": "npm test && npm run build",
+        "sort": "bun run src/cli.ts",
+        "sort:check": "bun run src/cli.ts --check",
+        "test": "node --test \"test/*.test.ts\""
+    },
+    "devDependencies": {
+        "@types/bun": "latest",
+        "prettier": "^3.8",
+        "prettier-plugin-tailwindcss": "^0.8",
+        "tailwindcss": "^4",
+        "typescript": ">=5.7"
+    },
+    "peerDependencies": {
+        "prettier": ">=3",
+        "prettier-plugin-tailwindcss": ">=0.8"
+    },
+    "engines": {
+        "node": ">=22.18"
+    },
+    "publishConfig": {
+        "access": "public"
+    }
 }
