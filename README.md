@@ -18,6 +18,15 @@ values, using a real PHP-aware lexer, and leaves everything else byte-identical.
 - **Zero-config** — reads `tailwindStylesheet` from your Prettier config, the same source of truth that
   `prettier-plugin-tailwindcss` uses.
 
+## Contents
+
+- [Requirements](#requirements) · [Install](#install) · [Setup](#setup) · [Usage](#usage)
+- [Editor integration](#editor-integration) — sort-on-save & pre-commit gate
+- [Sorting classes in PHP declarations](#sorting-classes-in-php-declarations) — the per-file opt-in
+- [WordPress themes & plugins](#wordpress-themes--plugins)
+- [How it handles mixed templates](#how-it-handles-mixed-templates) · [Programmatic API](#programmatic-api) · [Known limitations](#known-limitations)
+- [Development](#development) · [License](#license)
+
 ## Requirements
 
 - **Node ≥ 22.18**, or **Bun** — both run the CLI and the programmatic API.
@@ -87,7 +96,10 @@ Default globs are all `.php` files under the cwd; `node_modules`, `vendor`, `dis
 
 ## Editor integration
 
-No IDE plugin is needed — two small setups cover the common workflows.
+No IDE plugin is needed — two small setups cover the common workflows: sort-on-save and a pre-commit gate.
+
+<details>
+<summary><b>Sort on save</b> (PhpStorm / IntelliJ, VS Code) and a <b>pre-commit gate</b> — click to expand</summary>
 
 ### Sort on save (PhpStorm / IntelliJ)
 
@@ -146,6 +158,8 @@ git diff --cached --name-only -z --diff-filter=ACMR -- '*.php' | xargs -0 ./node
 ```
 
 In CI there's no staged diff — just sweep the whole project with `npx tailwind-sort-php --check`.
+
+</details>
 
 ## Sorting classes in PHP declarations
 
@@ -239,6 +253,9 @@ return array(
 PHP islands inside a class attribute are treated as opaque atoms that never move. Static text between islands is sorted
 independently — the same model the official plugin uses for `${}` interpolations in template literals.
 
+<details>
+<summary>Glued-fragment pinning, whitespace handling, and the full edge-case list — click to expand</summary>
+
 ```php
 <!-- before -->
 <h2 class="text-2xl font-bold <?= $featured ? 'text-amber-600' : '' ?> tracking-tight leading-snug">
@@ -264,6 +281,8 @@ Also handled correctly:
 - `<script>`/`<style>` content, HTML comments, and `echo '<div class="...">'` strings are left alone (to sort class
   strings declared in PHP, see [Sorting classes in PHP declarations](#sorting-classes-in-php-declarations))
 
+</details>
+
 ## Programmatic API
 
 The core is dependency-free and accepts any sort function, so you can use it without the official sorter (e.g., in
@@ -278,12 +297,17 @@ const out = transform(source, sortFn);
 
 ## Known limitations
 
+<details>
+<summary>Edge cases and unsupported syntax — click to expand</summary>
+
 - Complex string interpolation containing double quotes (`"{$arr["key"]}"`) can desync the PHP string lexer in rare
   cases. Use `{$arr['key']}` style or extract to a variable.
 - Unquoted attribute values (`class=foo`) are skipped.
 - Alpine `:class` / object syntax is not parsed (skipped unless added via `--attr`, which treats the value as plain
   classes).
 - Whitespace inside multi-line class attributes is normalized to single spaces (matches Prettier behavior).
+
+</details>
 
 ## Development
 
@@ -292,10 +316,10 @@ bun test      # or: node --test "test/*.test.ts"
 bun run build # compile src → dist (tsc); the published artifact
 ```
 
-54 tests: 41 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`), 5
-integration tests that exercise the real `prettier-plugin-tailwindcss` sorter and skip automatically when the Tailwind
-toolchain isn't installed, and 8 `init` tests that run against throwaway git repositories and skip when `git` is
-unavailable.
+74 tests: 59 core tests that are dependency-free (the sorter is injected, so they run against a mock `SortFn`),
+7 integration tests that exercise the real `prettier-plugin-tailwindcss` sorter and skip automatically when the
+Tailwind toolchain isn't installed, and 8 `init` tests that run against throwaway git repositories and skip when
+`git` is unavailable.
 
 ## License
 
