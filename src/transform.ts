@@ -31,10 +31,10 @@ export type SortFn = (classes: string[]) => string[];
  * Combined options for all lexer passes.
  */
 export interface TransformOptions extends IslandOptions, HtmlScanOptions {
-  /**
-   * Sort classes in PHP string-literal values too. Off by default; see `php-strings.ts` for eligibility.
-   */
-  sortPhpStrings?: boolean;
+    /**
+     * Sort classes in PHP string-literal values too. Off by default; see `php-strings.ts` for eligibility.
+     */
+    sortPhpStrings?: boolean;
 }
 
 /**
@@ -51,104 +51,104 @@ export interface TransformOptions extends IslandOptions, HtmlScanOptions {
  * // '<div class="mt-4 z-10 <?= $x ?> a b">'
  */
 export function transform(src: string, sortFn: SortFn, opts: TransformOptions = {}): string {
-  const islands = findIslands(src, opts);
-  const masked = maskIslands(src, islands);
-  const attrs = findClassAttributes(masked, opts);
+    const islands = findIslands(src, opts);
+    const masked = maskIslands(src, islands);
+    const attrs = findClassAttributes(masked, opts);
 
-  // Collect every edit as a {start, end, text} range, then apply them back-to-front so offsets stay valid.
-  // HTML class-attribute values live outside islands; PHP string values live inside them, so the two sets of
-  // ranges never overlap.
-  const edits: { start: number; end: number; text: string }[] = [];
+    // Collect every edit as a {start, end, text} range, then apply them back-to-front so offsets stay valid.
+    // HTML class-attribute values live outside islands; PHP string values live inside them, so the two sets of
+    // ranges never overlap.
+    const edits: { start: number; end: number; text: string }[] = [];
 
-  for (const { valueStart, valueEnd } of attrs) {
-    const original = src.slice(valueStart, valueEnd);
-    const inner = islands.filter((isl) => isl.start >= valueStart && isl.end <= valueEnd);
-    const rewritten = rewriteValue(original, valueStart, inner, sortFn);
-    if (rewritten !== original) edits.push({ start: valueStart, end: valueEnd, text: rewritten });
-  }
-
-  if (opts.sortPhpStrings) {
-    for (const { start, end } of findSortablePhpStrings(src, islands)) {
-      const original = src.slice(start, end);
-      const tokens = original.split(/\s+/).filter(Boolean);
-      if (tokens.length < 2) continue; // nothing to reorder; leave byte-identical
-      const rewritten = sortFn(tokens).join(' ');
-      if (rewritten !== original) edits.push({ start, end, text: rewritten });
+    for (const { valueStart, valueEnd } of attrs) {
+        const original = src.slice(valueStart, valueEnd);
+        const inner = islands.filter((isl) => isl.start >= valueStart && isl.end <= valueEnd);
+        const rewritten = rewriteValue(original, valueStart, inner, sortFn);
+        if (rewritten !== original) edits.push({ start: valueStart, end: valueEnd, text: rewritten });
     }
-  }
 
-  edits.sort((a, b) => b.start - a.start);
-  let out = src;
-  for (const e of edits) out = out.slice(0, e.start) + e.text + out.slice(e.end);
-  return out;
+    if (opts.sortPhpStrings) {
+        for (const { start, end } of findSortablePhpStrings(src, islands)) {
+            const original = src.slice(start, end);
+            const tokens = original.split(/\s+/).filter(Boolean);
+            if (tokens.length < 2) continue; // nothing to reorder; leave byte-identical
+            const rewritten = sortFn(tokens).join(' ');
+            if (rewritten !== original) edits.push({ start, end, text: rewritten });
+        }
+    }
+
+    edits.sort((a, b) => b.start - a.start);
+    let out = src;
+    for (const e of edits) out = out.slice(0, e.start) + e.text + out.slice(e.end);
+    return out;
 }
 
 interface Part {
-  type: 'static' | 'island';
-  text: string;
+    type: 'static' | 'island';
+    text: string;
 }
 
 function rewriteValue(value: string, base: number, islands: Island[], sortFn: SortFn): string {
-  // Build alternating static/island parts.
-  const parts: Part[] = [];
-  let pos = 0;
-  for (const isl of islands) {
-    const s = isl.start - base;
-    const e = isl.end - base;
-    parts.push({ type: 'static', text: value.slice(pos, s) });
-    parts.push({ type: 'island', text: value.slice(s, e) });
-    pos = e;
-  }
-  parts.push({ type: 'static', text: value.slice(pos) });
+    // Build alternating static/island parts.
+    const parts: Part[] = [];
+    let pos = 0;
+    for (const isl of islands) {
+        const s = isl.start - base;
+        const e = isl.end - base;
+        parts.push({ type: 'static', text: value.slice(pos, s) });
+        parts.push({ type: 'island', text: value.slice(s, e) });
+        pos = e;
+    }
+    parts.push({ type: 'static', text: value.slice(pos) });
 
-  let out = '';
-  for (let p = 0; p < parts.length; p++) {
-    const part = parts[p];
-    if (part.type === 'island') {
-      out += part.text;
-      continue;
+    let out = '';
+    for (let p = 0; p < parts.length; p++) {
+        const part = parts[p];
+        if (part.type === 'island') {
+            out += part.text;
+            continue;
+        }
+
+        const prevIsIsland = p > 0;
+        const nextIsIsland = p < parts.length - 1;
+        const t = part.text;
+
+        const hasLeadingWs = /^\s/.test(t);
+        const hasTrailingWs = /\s$/.test(t);
+        const tokens = t.split(/\s+/).filter(Boolean);
+
+        // Whitespace-only run between islands → preserve a single space.
+        if (tokens.length === 0) {
+            if (t.length > 0 && prevIsIsland && nextIsIsland) out += ' ';
+            continue;
+        }
+
+        const pinStart = prevIsIsland && !hasLeadingWs;
+        const pinEnd = nextIsIsland && !hasTrailingWs;
+
+        let head: string[] = [];
+        let tail: string[] = [];
+        let middle: string[];
+
+        if (pinStart && pinEnd && tokens.length === 1) {
+            // Single fragment glued to islands on both sides.
+            middle = [];
+            head = [tokens[0]];
+        } else {
+            const from = pinStart ? 1 : 0;
+            const to = pinEnd ? tokens.length - 1 : tokens.length;
+            if (pinStart) head = [tokens[0]];
+            if (pinEnd) tail = [tokens[tokens.length - 1]];
+            middle = tokens.slice(from, to);
+        }
+
+        const sorted = middle.length > 1 ? sortFn(middle) : middle;
+        const joined = [...head, ...sorted, ...tail].join(' ');
+
+        const prefix = prevIsIsland && hasLeadingWs ? ' ' : '';
+        const suffix = nextIsIsland && hasTrailingWs ? ' ' : '';
+        out += prefix + joined + suffix;
     }
 
-    const prevIsIsland = p > 0;
-    const nextIsIsland = p < parts.length - 1;
-    const t = part.text;
-
-    const hasLeadingWs = /^\s/.test(t);
-    const hasTrailingWs = /\s$/.test(t);
-    const tokens = t.split(/\s+/).filter(Boolean);
-
-    // Whitespace-only run between islands → preserve a single space.
-    if (tokens.length === 0) {
-      if (t.length > 0 && prevIsIsland && nextIsIsland) out += ' ';
-      continue;
-    }
-
-    const pinStart = prevIsIsland && !hasLeadingWs;
-    const pinEnd = nextIsIsland && !hasTrailingWs;
-
-    let head: string[] = [];
-    let tail: string[] = [];
-    let middle: string[];
-
-    if (pinStart && pinEnd && tokens.length === 1) {
-      // Single fragment glued to islands on both sides.
-      middle = [];
-      head = [tokens[0]];
-    } else {
-      const from = pinStart ? 1 : 0;
-      const to = pinEnd ? tokens.length - 1 : tokens.length;
-      if (pinStart) head = [tokens[0]];
-      if (pinEnd) tail = [tokens[tokens.length - 1]];
-      middle = tokens.slice(from, to);
-    }
-
-    const sorted = middle.length > 1 ? sortFn(middle) : middle;
-    const joined = [...head, ...sorted, ...tail].join(' ');
-
-    const prefix = prevIsIsland && hasLeadingWs ? ' ' : '';
-    const suffix = nextIsIsland && hasTrailingWs ? ' ' : '';
-    out += prefix + joined + suffix;
-  }
-
-  return out;
+    return out;
 }

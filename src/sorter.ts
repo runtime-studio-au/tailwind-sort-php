@@ -12,14 +12,14 @@ import type { SortFn } from './transform.ts';
  * Options for constructing the official Tailwind sorter.
  */
 export interface SorterOptions {
-  /**
-   * Tailwind v4 CSS entry point.
-   */
-  stylesheet: string;
-  /**
-   * Base directory for resolving relative paths. Default: `cwd`.
-   */
-  base?: string;
+    /**
+     * Tailwind v4 CSS entry point.
+     */
+    stylesheet: string;
+    /**
+     * Base directory for resolving relative paths. Default: `cwd`.
+     */
+    base?: string;
 }
 
 /**
@@ -32,13 +32,13 @@ export interface SorterOptions {
  * @returns A synchronous `SortFn` for use with `transform()`.
  */
 export async function createTailwindSortFn(opts: SorterOptions): Promise<SortFn> {
-  // Dynamic import so the core package works without the dependency installed.
-  const { createSorter } = await import('prettier-plugin-tailwindcss/sorter');
+    // Dynamic import so the core package works without the dependency installed.
+    const { createSorter } = await import('prettier-plugin-tailwindcss/sorter');
 
-  const sorter = await createSorter({
-    base: opts.base ?? process.cwd(),
-    stylesheetPath: opts.stylesheet,
-  });
+    const sorter = await createSorter({
+        base: opts.base ?? process.cwd(),
+        stylesheetPath: opts.stylesheet,
+    });
 
-  return (classes: string[]) => sorter.sortClassLists([classes])[0];
+    return (classes: string[]) => sorter.sortClassLists([classes])[0];
 }
