@@ -44,8 +44,8 @@ vocabulary. Any config format Prettier supports works (`.prettierrc`, `prettier.
 
 ```js
 export default {
-  plugins: ['prettier-plugin-tailwindcss'],
-  tailwindStylesheet: './resources/css/main.css',
+    plugins: ['prettier-plugin-tailwindcss'],
+    tailwindStylesheet: './resources/css/main.css',
 };
 ```
 
@@ -108,14 +108,14 @@ to `.vscode/settings.json`:
 
 ```json
 {
-  "emeraldwalk.runonsave": {
-    "commands": [
-      {
-        "match": "\\.php$",
-        "cmd": "${workspaceFolder}/node_modules/.bin/tailwind-sort-php ${relativeFile}"
-      }
-    ]
-  }
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                "match": "\\.php$",
+                "cmd": "${workspaceFolder}/node_modules/.bin/tailwind-sort-php ${relativeFile}"
+            }
+        ]
+    }
 }
 ```
 
@@ -157,9 +157,9 @@ your Prettier config (or the repeatable `--php-source <glob>` flag):
 
 ```js
 export default {
-  plugins: ['prettier-plugin-tailwindcss'],
-  tailwindStylesheet: './resources/css/main.css',
-  tailwindPhpSources: ['src/classes/*.php'],
+    plugins: ['prettier-plugin-tailwindcss'],
+    tailwindStylesheet: './resources/css/main.css',
+    tailwindPhpSources: ['src/classes/*.php'],
 };
 ```
 
